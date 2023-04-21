@@ -11,35 +11,39 @@ async function main() {
     );
     console.log("Starting refill");
 
-    for (const op of channels) {
-        console.log(`\nFetching channel ${op.name}`);
+    const firstChannel = await DiscordClient.channels.fetch(channels[0].id);
+
+    const actThreads = await firstChannel.threads
+        .fetchActive()
+        .then(x => x.threads);
+    console.log(actThreads.size, "active threads found in guild");
+
+    for (let thread of actThreads.values()) {
+        if (channels.find(c => c.id == thread.parentId)) {
+            await AirtableUtil.createRecord(
+                firstChannel,
+                thread,
+                await resolveThreadStarter(thread)
+            );
+        }
+    }
+
+    for (let op of channels) {
         const channel = await DiscordClient.channels.fetch(op.id);
-
-        console.log(`Fetching threads of channel ${channel.name}`);
-        const actThreads = await channel.threads
-            .fetchActive()
-            .then(x => x.threads);
-        console.log(actThreads.size, "active threads found");
         const arcThreads = await channel.threads
-            .fetchArchived()
+            .fetchArchived({ fetchAll: true, limit: 100 })
             .then(x => x.threads);
-        console.log(arcThreads.size, "archived threads found");
+        console.log(
+            arcThreads.size,
+            "archived threads found for channel",
+            op.name
+        );
 
-        for (let thread of actThreads.values()) {
-            await AirtableUtil.createRecord(
-                channel,
-                thread,
-                await resolveThreadStarter(thread)
-            );
-        }
-
-        for (let thread of arcThreads.values()) {
-            await AirtableUtil.createRecord(
-                channel,
-                thread,
-                await resolveThreadStarter(thread)
-            );
-        }
+        await AirtableUtil.createRecord(
+            channel,
+            thread,
+            await resolveThreadStarter(thread)
+        );
     }
 
     await AirtableUtil.correctCurators().catch(console.error);
