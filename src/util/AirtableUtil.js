@@ -20,7 +20,9 @@ module.exports = class AirtableUtil extends null {
             Status: active ? "ACTIVE" : "ARCHIVED",
             Comments: thread.messageCount,
             Timestamp: thread.createdTimestamp,
-            curatorId: curator?.id
+            curatorId: curator?.id,
+            channelId: channel.id,
+            threadId: thread.id
         };
         console.log("Creating record...");
         await Util.retryUntilSuccess(ThreadsTable.create, record, {
