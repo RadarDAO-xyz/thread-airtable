@@ -8,7 +8,7 @@ module.exports = class AirtableUtil extends null {
      * @param {import('discord.js').ThreadChannel} thread
      * @param {import('discord.js').User} thread
      */
-    static async createRecord(channel, thread, curator) {
+    static async createRecord(channel, thread, curator, active = true) {
         console.log(`Creating record for thread ${thread.name}`);
         if (curator) console.log(`Found thread curator: ${curator.tag}`);
         else console.log("Curator not found");
@@ -17,7 +17,7 @@ module.exports = class AirtableUtil extends null {
             Link: `https://ptb.discord.com/channels/913873017287884830/${thread.id}`,
             "Signal Channel": channel.name,
             Curator: curator?.tag,
-            Status: "ACTIVE",
+            Status: active ? "ACTIVE" : "ARCHIVED",
             Comments: thread.messageCount,
             Timestamp: thread.createdTimestamp,
             curatorId: curator?.id

@@ -39,12 +39,13 @@ async function main() {
             await AirtableUtil.createRecord(
                 thread.parent,
                 thread,
-                await resolveThreadStarter(thread)
+                await resolveThreadStarter(thread),
+                !thread.archived
             );
         }
     }
 
-    console.log("Correcting #0000 curators...")
+    console.log("Correcting #0000 curators...");
     await AirtableUtil.correctCurators().catch(console.error);
 
     DiscordClient.destroy();
